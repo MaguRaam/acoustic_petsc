@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.tex": "bibtex",
+        "cmath": "c",
+        "complex": "c"
+    }
+}
