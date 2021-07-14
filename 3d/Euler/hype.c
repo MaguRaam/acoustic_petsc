@@ -3,7 +3,7 @@
  *      Author: sunder
  */ 
 
-static char help[] = "Fourth Order 3D code for solving Acoustic Wave equations using PETSc.\n\n";
+static char help[] = "Third Order 3D code for solving Euler equations using PETSc.\n\n";
 
 #include "hype.h" 
 
@@ -36,26 +36,25 @@ int main(int argc,char **argv) {
     Ctx.y_max           =  1.0;
     Ctx.z_min           = -1.0; 
     Ctx.z_max           =  1.0;
-    Ctx.N_x             =  200;
-    Ctx.N_y             =  200;
-    Ctx.N_z             =  200;
+    Ctx.N_x             =   64;
+    Ctx.N_y             =   64;
+    Ctx.N_z             =   64;
     Ctx.CFL             =  0.9; 
     Ctx.InitialStep     =  0; 
     Ctx.InitialTime     =  0.0;                            
-    Ctx.FinalTime       =  3.0;                            
+    Ctx.FinalTime       =  2.0;                            
     Ctx.WriteInterval   =  1000;      
     Ctx.RestartInterval =  1000;
-    Ctx.left_boundary   =  adiabatic_wall;                   
-    Ctx.right_boundary  =  adiabatic_wall;                   
-    Ctx.bottom_boundary =  adiabatic_wall;                     
-    Ctx.top_boundary    =  adiabatic_wall;
-    Ctx.front_boundary  =  adiabatic_wall;                     
-    Ctx.back_boundary   =  adiabatic_wall;
-    Ctx.ReconsPrimitive =  PETSC_TRUE; 
+    Ctx.left_boundary   =  periodic;                   
+    Ctx.right_boundary  =  periodic;                   
+    Ctx.bottom_boundary =  periodic;                     
+    Ctx.top_boundary    =  periodic;
+    Ctx.front_boundary  =  periodic;                     
+    Ctx.back_boundary   =  periodic;
+    Ctx.ReconsPrimitive =  PETSC_FALSE; 
     Ctx.Restart         =  PETSC_FALSE; 
     Ctx.h = (Ctx.x_max - Ctx.x_min)/(PetscReal)(Ctx.N_x);  
-    Ctx.dt = 0.5*Ctx.h*Ctx.CFL/wave_speed;
-
+    
     // --------------------------------------------
     // Data members  
     //---------------------------------------------
@@ -103,7 +102,7 @@ int main(int argc,char **argv) {
     ierr = DMDACreate3d(PETSC_COMM_WORLD,x_boundary,y_boundary,z_boundary,DMDA_STENCIL_BOX,Ctx.N_x,Ctx.N_y,Ctx.N_z,
                         PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,                             
                         nVar,3,NULL,NULL,NULL,&da);CHKERRQ(ierr);  
-
+                        
     ierr = DMSetUp(da);CHKERRQ(ierr);
     
     // Now create various global vectors 
@@ -113,13 +112,16 @@ int main(int argc,char **argv) {
 
     // Set coordinates of cell centers 
     
-    ierr = DMDASetUniformCoordinates(da,Ctx.x_min + 0.5*Ctx.h, Ctx.x_max - 0.5*Ctx.h,
-                                        Ctx.y_min + 0.5*Ctx.h, Ctx.y_max - 0.5*Ctx.h,
-                                        Ctx.z_min + 0.5*Ctx.h, Ctx.z_max - 0.5*Ctx.h);CHKERRQ(ierr);
+    ierr = DMDASetUniformCoordinates(da,Ctx.x_min + 0.5*Ctx.h, Ctx.x_max + 0.5*Ctx.h,
+                                        Ctx.y_min + 0.5*Ctx.h, Ctx.y_max + 0.5*Ctx.h,
+                                        Ctx.z_min + 0.5*Ctx.h, Ctx.z_max + 0.5*Ctx.h);CHKERRQ(ierr);
     // Set names of the fields
 
-    ierr = DMDASetFieldName(da,0,"u");CHKERRQ(ierr);
-    ierr = DMDASetFieldName(da,1,"v");CHKERRQ(ierr);
+    ierr = DMDASetFieldName(da,0,"density");CHKERRQ(ierr);
+    ierr = DMDASetFieldName(da,1,"x-momentum");CHKERRQ(ierr);
+    ierr = DMDASetFieldName(da,2,"y-momentum");CHKERRQ(ierr);    
+    ierr = DMDASetFieldName(da,3,"z-momentum");CHKERRQ(ierr);
+    ierr = DMDASetFieldName(da,4,"total-energy-density");CHKERRQ(ierr);
     
     // --------------------------------------------
     // Allocate memory for boundary values and 
@@ -131,9 +133,9 @@ int main(int argc,char **argv) {
     ierr = DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm);CHKERRQ(ierr);
     
     Ctx.u_bnd = allocate6d(zm+2,ym+2, xm+2,nVar,6,N_gp2d); // 6 => number of faces in a cube
-    Ctx.G     = allocate4d(zm,ym+1,xm,nVar+1);
-    Ctx.F     = allocate4d(zm,ym,xm+1,nVar+1);
-    Ctx.H     = allocate4d(zm+1,ym,xm,nVar+1);
+    Ctx.F     = allocate4d(zm,ym,xm+1,nVar);
+    Ctx.G     = allocate4d(zm,ym+1,xm,nVar);
+    Ctx.H     = allocate4d(zm+1,ym,xm,nVar);
     
     ierr = DMCreateLocalVector(da,&Ctx.localU);CHKERRQ(ierr);
     
@@ -160,6 +162,8 @@ int main(int argc,char **argv) {
         ierr = InitializeSolution(U, da, Ctx);CHKERRQ(ierr);
     }
     
+    ierr = InitializeSolution(U, da, Ctx);CHKERRQ(ierr);
+    
     // --------------------------------------------
     // Advance solution in time   
     //---------------------------------------------
@@ -169,19 +173,19 @@ int main(int argc,char **argv) {
     ierr = TSSetDM(ts,da);CHKERRQ(ierr);                              
     
     if (Ctx.ReconsPrimitive) {
-        ierr = RHSFunctionPrimitive(ts, Ctx.InitialTime, U, RHS, &Ctx);CHKERRQ(ierr);
-        ierr = TSSetRHSFunction(ts,NULL,RHSFunctionPrimitive, &Ctx);CHKERRQ(ierr);
+        //ierr = RHSFunctionPrimitive(ts, Ctx.InitialTime, U, RHS, &Ctx);CHKERRQ(ierr);
+        //ierr = TSSetRHSFunction(ts,NULL,RHSFunctionPrimitive, &Ctx);CHKERRQ(ierr);
     }
     
     else {
-        //ierr = RHSFunction(ts, Ctx.InitialTime, U, RHS, &Ctx);CHKERRQ(ierr);
-        //ierr = TSSetRHSFunction(ts,NULL,RHSFunction, &Ctx);CHKERRQ(ierr);
+        ierr = RHSFunction(ts, Ctx.InitialTime, U, RHS, &Ctx);CHKERRQ(ierr);
+        ierr = TSSetRHSFunction(ts,NULL,RHSFunction, &Ctx);CHKERRQ(ierr);
     }
     
     ierr = TSSetStepNumber(ts, Ctx.InitialStep);CHKERRQ(ierr);
     ierr = TSSetTime(ts, Ctx.InitialTime);CHKERRQ(ierr);
     ierr = TSSetTimeStep(ts, Ctx.dt); CHKERRQ(ierr);CHKERRQ(ierr);                     
-    ierr = TSMonitorSet(ts,MonitorFunction,&Ctx,NULL);CHKERRQ(ierr);
+    //ierr = TSMonitorSet(ts,MonitorFunction,&Ctx,NULL);CHKERRQ(ierr);
     ierr = TSSetMaxTime(ts, Ctx.FinalTime);CHKERRQ(ierr);
     ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
     ierr = TSSetFromOptions(ts);CHKERRQ(ierr); 
@@ -196,7 +200,7 @@ int main(int argc,char **argv) {
     //--------------------------------------------
     
     char filename[20]; 
-    sprintf(filename, "sol-%08d.vtk", time_steps);
+    sprintf(filename, "sol-%05d.vtk", time_steps);
     PetscViewer viewer;  
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, filename, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
@@ -208,9 +212,9 @@ int main(int argc,char **argv) {
     // test cases)
     //---------------------------------------------
 
-    //PetscReal nrm_2, nrm_inf;
-    //ierr = ErrorNorms(U, da, Ctx, &nrm_2, &nrm_inf);CHKERRQ(ierr);
-    //ierr = PetscPrintf(PETSC_COMM_WORLD, "Norm2 = %.7e, NormMax = %.7e\n", nrm_2, nrm_inf);CHKERRQ(ierr);
+    PetscReal nrm_2, nrm_inf;
+    ierr = ErrorNorms(U, da, Ctx, &nrm_2, &nrm_inf);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Norm2 = %.7e, NormMax = %.7e\n", nrm_2, nrm_inf);CHKERRQ(ierr);
 
     // --------------------------------------------
     // Free all the memory, finalize MPI and exit   

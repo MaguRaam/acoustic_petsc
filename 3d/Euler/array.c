@@ -599,7 +599,13 @@ void min_max_6d(array6d* arr, PetscReal* min, PetscReal* max) {
 // 7D Array 
 //----------------------------------------------------------------------------------------------------
 
-/* Create a new array */are ragas
+/* Create a new array */
+
+array7d* allocate7d(PetscInt size1, PetscInt size2, PetscInt size3, PetscInt size4, PetscInt size5, PetscInt size6, PetscInt size7) {
+    
+    PetscInt i;
+    
+    // allocate a matrix structure
     array7d * arr = (array7d *) malloc(sizeof(array7d));
 
     // set dimensions

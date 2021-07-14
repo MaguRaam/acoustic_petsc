@@ -30,13 +30,13 @@
 // Various constants used throught the code 
 //----------------------------------------------------------------------------
 
-#define nVar 2               /* Number of components in the PDE system */ 
+#define nVar 5               /* Number of components in the PDE system */ 
 #define DIM 3                /* Dimensions of the problem */
-#define dofs_per_cell 20     /* Number of degrees of freedom polynomial expansion in a cell */
+#define dofs_per_cell 10     /* Number of degrees of freedom polynomial expansion in a cell */
 
-// Physical Constants 
-static const PetscReal wave_speed    = 1.0;      /* Wave speed */
-
+static const PetscReal GAMMA         = 1.4;     /* Stiffness constant of the solid phase */
+static const PetscReal prs_floor     = 1.0e-12; /* Pressure floor value */
+static const PetscReal rho_floor     = 1.0e-14; /* Density floor value */
 static const PetscReal small_num     = 1.0e-12; /* Effective small number in the code */
 static const PetscInt  s_width       = 5;       /* Width of the stencil */ 
 
@@ -85,13 +85,7 @@ static const PetscReal w_gp2d[] = {0.25, 0.25, 0.25, 0.25};
 
 // Some rational numbers frequently used throught the code
 
-static const PetscReal r1_6  = 1./6.;
-static const PetscReal r1_12  = 1./12.; 
-static const PetscReal r3_20  = 3./20.;
-static const PetscReal r1_120  = 1./120.; 
-static const PetscReal r13_3   = 13./3.;
-static const PetscReal r7_6   =  7./6.; 
-static const PetscReal r61_48  = 61./48.;  
+static const PetscReal r1_12  = 1./12.; static const PetscReal r13_3  = 13./3.;    
 
 //----------------------------------------------------------------------------
 // Structure representing a multi-component field vector 
@@ -113,7 +107,7 @@ typedef struct {
 // Various types of boundary conditions 
 //----------------------------------------------------------------------------
 
-enum bndry_type{inflow, periodic, reflective, transmissive, adiabatic_wall};
+enum bndry_type{inflow, periodic, reflective, transmissive};
 
 //----------------------------------------------------------------------------
 // Multidimensional array structures (upto 7 dimensions)
@@ -274,23 +268,16 @@ typedef struct {
 void PDECons2Prim(const Field*, Field*);
 void PDEPrim2Cons(const Field*, Field*);
 PetscReal PDEConsFlux(const Field*, const PetscReal, const PetscReal, const PetscReal, const PetscReal, const PetscReal,  const PetscReal, Field*); 
-PetscReal PDEConsFluxPrim(const Field*, const PetscReal, const PetscReal, const PetscReal, 
-                          const PetscReal, const PetscReal,  const PetscReal, PetscReal F[7]); 
 PetscReal PDELLFRiemannSolver(const Field*, const Field*, const PetscReal, const PetscReal, 
                               const PetscReal, const PetscReal, const PetscReal,  const PetscReal, Field*); 
-PetscReal PDEHLLCRiemannSolver(const Field*, const Field*, const PetscReal, const PetscReal, 
-                              const PetscReal, const PetscReal, const PetscReal,  const PetscReal, PetscReal Flux[7]); 
-PetscReal PDErotHLLCRiemannSolver(const Field*, const Field*, const PetscReal, const PetscReal, 
-                              const PetscReal, const PetscReal, const PetscReal,  const PetscReal, PetscReal Flux[7]); 
-PetscBool PDECheckPAD(const Field);
 
 //----------------------------------------------------------------------------
 // WENO and TVD reconstruction 
 //----------------------------------------------------------------------------
 
 void weno(const PetscReal U_x[], const PetscReal U_y[], const PetscReal U_z[], 
-          const PetscReal U_xy[], const PetscReal U_yz[], const PetscReal U_zx[], const PetscReal U_xyz[],
-          PetscReal coeffs[]);
+          const PetscReal U_xy[], const PetscReal U_yz[], const PetscReal U_zx[],
+         PetscReal coeffs[]);
 PetscReal evaluate_polynomial(const PetscReal, const PetscReal, const PetscReal, const PetscReal coeffs[]);
 void evaluate_grad(const PetscReal coeffs[], PetscReal, PetscReal, const PetscReal, PetscReal*, PetscReal*);
 
