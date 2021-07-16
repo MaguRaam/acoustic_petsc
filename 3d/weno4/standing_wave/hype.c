@@ -36,9 +36,9 @@ int main(int argc,char **argv) {
     Ctx.y_max           =  1.0;
     Ctx.z_min           = -1.0; 
     Ctx.z_max           =  1.0;
-    Ctx.N_x             =  128;
-    Ctx.N_y             =  128;
-    Ctx.N_z             =  128;
+    Ctx.N_x = 128;
+    Ctx.N_y = 128;
+    Ctx.N_z = 128;
     Ctx.CFL             =  0.5;
     Ctx.InitialStep     =  0; 
     Ctx.InitialTime     =  0.0;                            
@@ -193,23 +193,24 @@ int main(int argc,char **argv) {
     ierr = PetscViewerVTKOpen(PETSC_COMM_WORLD, filename, FILE_MODE_WRITE, &viewer);CHKERRQ(ierr); 
     ierr = DMView(da, viewer);CHKERRQ(ierr);
     ierr = VecView(U, viewer);CHKERRQ(ierr);
-    
+
     // --------------------------------------------
-    // Get the norms of errors (only for periodic
-    // test cases)
+    // Get the norms of errors and write it in file
     //---------------------------------------------
 
     PetscReal nrm_2, nrm_inf;
     ierr = ErrorNorms(U, da, Ctx, &nrm_2, &nrm_inf, Ctx.FinalTime);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Norm2 = %.7e, NormMax = %.7e\n", nrm_2, nrm_inf, Ctx.FinalTime);CHKERRQ(ierr);
-
-
+    FILE *file;
+    file = fopen("Error.dat", "a");
+    ierr = PetscFPrintf(PETSC_COMM_WORLD, file, "%d %.7e %.7e\n", Ctx.N_x, nrm_2, nrm_inf, Ctx.FinalTime);
+    CHKERRQ(ierr);
 
     // --------------------------------------------
-    // Free all the memory, finalize MPI and exit   
+    // Free all the memory, finalize MPI and exit
     //---------------------------------------------
-    
-    ierr = VecDestroy(&U);CHKERRQ(ierr);
+
+    ierr = VecDestroy(&U);
+    CHKERRQ(ierr);
     ierr = VecDestroy(&RHS);CHKERRQ(ierr);
     ierr = DMDestroy(&da);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
