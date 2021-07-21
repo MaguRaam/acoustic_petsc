@@ -11,8 +11,10 @@
 
 void InitialCondition(PetscReal x, PetscReal y, PetscReal *Q0)
 {
-    PetscReal k = 1;
-    Q0[0] = PetscSinReal(PETSC_PI*k*x)*PetscSinReal(PETSC_PI*k*y);
+    PetscReal kx = 2*PETSC_PI;
+    PetscReal ky = 2*PETSC_PI;
+
+    Q0[0] = sin(kx*x)*sin(ky*y);
     Q0[1] = 0.0;
 }
 
@@ -22,9 +24,12 @@ void InitialCondition(PetscReal x, PetscReal y, PetscReal *Q0)
 
 void ExactSolution(PetscReal x, PetscReal y, PetscReal t, PetscReal* Q0){
  
-    PetscReal k = 1;
-    PetscReal omega = PetscSqrtReal(2.0*PETSC_PI*PETSC_PI*k*k);
+    PetscReal kx = 2*PETSC_PI;
+    PetscReal ky = 2*PETSC_PI;
 
-    Q0[0] = PetscSinReal(PETSC_PI*k*x)*PetscSinReal(PETSC_PI*k*y)*PetscCosReal(omega*t);
-    Q0[1] = 0.0;
+    //dispersion relation:
+    PetscReal omega = wave_speed*sqrt(kx*kx + ky*ky);
+
+    Q0[0] = sin(kx*x)*sin(ky*y)*cos(omega*t);
+    Q0[1] = -omega*sin(kx*x)*sin(ky*y)*sin(omega*t);
 }   

@@ -26,10 +26,11 @@ PetscErrorCode MonitorFunction (TS ts,PetscInt step, PetscReal time, Vec U, void
             ierr = TSGetDM(ts,&da); CHKERRQ(ierr);
             
             char filename[20];
-            sprintf(filename, "sol-%05d.vts", step); // 4 is the padding level, increase it for longer simulations 
-            ierr = PetscPrintf(PETSC_COMM_WORLD,"Writing data in vts format to %s at t = %f, step = %d\n", filename, time, step); CHKERRQ(ierr);
+            sprintf(filename, "plot/sol-%05d.vtk", step); // 4 is the padding level, increase it for longer simulations 
+            ierr = PetscPrintf(PETSC_COMM_WORLD,"Writing data in vtk format to %s at t = %f, step = %d\n", filename, time, step); CHKERRQ(ierr);
             PetscViewer viewer;  
-            ierr = PetscViewerVTKOpen(PETSC_COMM_WORLD, filename, FILE_MODE_WRITE, &viewer);CHKERRQ(ierr); 
+            PetscViewerASCIIOpen(PETSC_COMM_WORLD, filename, &viewer);
+            PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK);
             ierr = DMView(da, viewer);
             VecView(U, viewer);
             

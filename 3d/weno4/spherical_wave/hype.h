@@ -285,9 +285,11 @@ void evaluate_grad(const PetscReal coeffs[], PetscReal, PetscReal, PetscReal, co
 //----------------------------------------------------------------------------
 
 Field InitialCondition(PetscReal, PetscReal, PetscReal);
+Field ExactSolution(PetscReal, PetscReal, PetscReal, PetscReal);
 PetscErrorCode InitializeSolution(Vec, DM, AppCtx);
 PetscErrorCode RHSFunction(TS, PetscReal, Vec, Vec, void*);
 PetscErrorCode MonitorFunction (TS, PetscInt, PetscReal, Vec, void*);
+PetscErrorCode ErrorNorms(Vec, DM, AppCtx, PetscReal*, PetscReal*, PetscReal);
 
 #endif /* HYPE_H_ */ 
  

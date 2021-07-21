@@ -33,8 +33,8 @@ int main(int argc,char **argv) {
     Ctx.x_max           =  1.0;                            
     Ctx.y_min           = -1.0;                           
     Ctx.y_max           =  1.0;                             
-    Ctx.N_x             =  256;                            
-    Ctx.N_y             =  256;                             
+    Ctx.N_x             =  16;                            
+    Ctx.N_y             =  16;                             
     Ctx.CFL             =  0.5;                            
     Ctx.InitialStep     =  0;
     Ctx.InitialTime     =  0.0;                            
@@ -231,9 +231,12 @@ int main(int argc,char **argv) {
     // test cases)
     //---------------------------------------------
 
-    PetscReal nrm_2, nrm_inf;
-    ierr = ErrorNorms(U, da, Ctx, &nrm_2, &nrm_inf,Ctx.FinalTime);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Norm2 = %.7e, NormMax = %.7e\n", nrm_2, nrm_inf);CHKERRQ(ierr);
+	 PetscReal nrm_2, nrm_inf;
+    ierr = ErrorNorms(U, da, Ctx, &nrm_2, &nrm_inf, Ctx.FinalTime);CHKERRQ(ierr);
+    FILE *file;
+    file = fopen("Error.dat", "a");
+    ierr = PetscFPrintf(PETSC_COMM_WORLD, file, "%d %.7e %.7e\n", Ctx.N_x, nrm_2, nrm_inf, Ctx.FinalTime);
+    CHKERRQ(ierr);
 
     // --------------------------------------------
     // Print the time taken for simulation       

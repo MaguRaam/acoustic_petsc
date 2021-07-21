@@ -1,0 +1,55 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amsfonts,amsthm}
+\usepackage{graphicx}
+
+\title{3D structured grid acoustic solver}
+\date{\today}
+\author{}
+\begin{document}
+\maketitle
+\section*{Results}
+We solve the acoustic wave equation
+\begin{equation*}
+    \frac{\partial{}^{2}{u}}{\partial{t}^{2}}- c^{2}\nabla{}^{2}{u}=0 \hspace{2.4cm}.
+\end{equation*}
+on a 3d structured periodic domain $\Omega$ = $[0,2\pi] \times [0,2\pi] \times [0,2\pi]$ using the initial conditions 
+\begin{equation*}
+	u(\mathbf{x},0)= \sin(k_{x}x + k_{y}y + k_{z}z)
+\end{equation*}
+and
+\begin{equation*}
+	\frac{\partial u(\mathbf{x},0)}{\partial t}=-\omega \cos(k_{x}x + k_{y}y + k_{z}z).
+\end{equation*}
+The plane wave solution for the above initial contion is
+\begin{equation}
+    u(\mathbf{x},t)= \sin(k_{x}x + k_{y}y + k_{z}z - \omega t).
+\end{equation}
+And the wave speed in terms of wave number and frequency is given by the dispersion relation
+\begin{equation*}
+	c^{2}=\frac{\omega^{2}}{k_{x}^{2} + k_{y}^{2} + k_{z}^{2}}.
+\end{equation*}
+We discretize the wave equation using the fourth-order central WENO polynomial in space and SSPRK54 scheme in time. We did the convergence study for wave number $k_{x} = k_{y} = k_{z} = 1$, wave speed $c = 1$ and $cfl = 0.5$. We obtain fourth-order convergence in space.
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{ |c|c|c|c|c| } 
+		\hline
+		N   & $L_{2}$norm & $L_{\infty}$ norm & $L_{2}$ rate & $L_{\infty}$ rate \\ 
+		\hline
+		16  & 7.23e-03 		   & 6.48e-04     & -            & -                \\
+		32  & 5.06e-04         & 4.54e-05     & 3.83         & 3.83             \\
+		64  & 3.15e-05         & 2.82e-06     & 4.00         & 4.00              \\
+		128 & 1.94e-06         & 1.74e-07     & 4.02         & 4.01              \\
+		\hline
+	\end{tabular}
+	\caption{Convergence table for plane wave solution}
+	\label{table:2}
+\end{table} 
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.7\textwidth]{error.png}
+    \caption{$L_{2}$ and $L_{\infty}$ error plot}
+\end{figure}
+
+
+\end{document}

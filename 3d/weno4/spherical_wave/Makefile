@@ -15,4 +15,4 @@ all: $(TARGET)
 
 $(TARGET): $(OBJ)  chkopts
 	-${CLINKER} -o $(TARGET) $(OBJ) ${PETSC_LIB}
-	${RM} $(OBJ)
+	${RM} $(OBJ) *.vts restart*

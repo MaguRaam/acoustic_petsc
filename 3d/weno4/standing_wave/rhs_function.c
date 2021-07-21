@@ -327,7 +327,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec RHS, void* ctx) {
         for (j=ys; j<ys+ym; ++j) {
             for (i=xs; i<xs+xm; ++i) {
 
-                rhs[k][j][i].comp[0]  =     u[k][j][i].comp[1];
+                rhs[k][j][i].comp[0]  = u[k][j][i].comp[1];
 
                 rhs[k][j][i].comp[1]  =     r1_h*(get_element_3d(Ctx->F, k-zs, j-ys, i+1-xs) - get_element_3d(Ctx->F, k-zs, j-ys, i-xs)) +
                                             r1_h*(get_element_3d(Ctx->G, k-zs, j+1-ys, i-xs) - get_element_3d(Ctx->G, k-zs, j-ys, i-xs)) + 

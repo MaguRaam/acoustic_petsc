@@ -88,7 +88,7 @@ PetscErrorCode ErrorNorms(Vec U, DM da, AppCtx Ctx, PetscReal* l2, PetscReal* li
     ierr = VecNorm(U_exact, NORM_INFINITY, &nrm_inf); CHKERRQ(ierr);
     ierr = VecNorm(U_exact, NORM_2, &nrm2); CHKERRQ(ierr);
 
-    nrm2 = nrm2/((PetscReal)Ctx.N_x);
+    nrm2 = nrm2*PetscPowReal(h, 1.5);
 
     *l2 = nrm2; 
     *linf = nrm_inf; 

@@ -1,6 +1,0 @@
-{
-    "files.associations": {
-        "*.tex": "bibtex",
-        "random": "c"
-    }
-}

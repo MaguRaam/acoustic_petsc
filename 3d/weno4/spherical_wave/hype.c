@@ -42,7 +42,7 @@ int main(int argc,char **argv) {
     Ctx.CFL             =  0.5;
     Ctx.InitialStep     =  0; 
     Ctx.InitialTime     =  0.0;                            
-    Ctx.FinalTime       =  10.0;                            
+    Ctx.FinalTime       =  5.0;                            
     Ctx.WriteInterval   =  100;      
     Ctx.RestartInterval =  1000;
     Ctx.left_boundary   =  periodic;                   
@@ -188,7 +188,7 @@ int main(int argc,char **argv) {
     //--------------------------------------------
     
     char filename[20]; 
-    sprintf(filename, "sol-%08d.vtk", time_steps);
+    sprintf(filename, "plot/sol-%08d.vtk", time_steps);
     PetscViewer viewer;  
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, filename, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
@@ -196,6 +196,16 @@ int main(int argc,char **argv) {
     ierr = VecView(U, viewer);CHKERRQ(ierr);
     
 
+    // --------------------------------------------
+    // Get the norms of errors and write it in file
+    //---------------------------------------------
+
+    PetscReal nrm_2, nrm_inf;
+    ierr = ErrorNorms(U, da, Ctx, &nrm_2, &nrm_inf, Ctx.FinalTime);CHKERRQ(ierr);
+    FILE *file;
+    file = fopen("Error.dat", "a");
+    ierr = PetscFPrintf(PETSC_COMM_WORLD, file, "%d %.7e %.7e\n", Ctx.N_x, nrm_2, nrm_inf, Ctx.FinalTime);
+    CHKERRQ(ierr);
 
     // --------------------------------------------
     // Free all the memory, finalize MPI and exit   
@@ -212,6 +222,10 @@ int main(int argc,char **argv) {
     free3d(Ctx.F);
     free3d(Ctx.G);   
     free3d(Ctx.H);   
+    
+    // --------------------------------------------
+    // Print the time taken for simulation       
+    //---------------------------------------------
     
     ierr =  PetscTime(&end_time);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Time taken =  %g\n",(double)(end_time - start_time));CHKERRQ(ierr);
