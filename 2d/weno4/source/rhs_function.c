@@ -18,11 +18,11 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec RHS, void* ctx) {
     Field   **u;                   
     Field   **rhs;                 
     PetscReal u_x_loc[s_width], u_y_loc[s_width], u_xy_loc[s_width];  
-    PetscReal dt; 
     PetscReal coeffs[nDOF];
-    PetscReal value, grad_x, grad_y; 
-    PetscReal r1_h = 1./(Ctx->h); 
-    PetscReal x_loc, y_loc, nx, ny; 
+    PetscReal grad_x, grad_y; 
+    PetscReal r1_h = 1./(Ctx->h);
+    PetscReal r1_h2 = 1./((Ctx->h)*(Ctx->h));  
+    PetscReal nx, ny; 
     PetscInt local_i, local_j;
 
     PetscReal grad_QL[nVar][DIM]; PetscReal grad_QR[nVar][DIM];
@@ -34,7 +34,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec RHS, void* ctx) {
 
     ierr = DMGlobalToLocalBegin(da, U, INSERT_VALUES, Ctx->localU);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(da, U, INSERT_VALUES,   Ctx->localU);CHKERRQ(ierr);
-,nVar+1
+
     // Read the local solution to the array u  
 
     ierr = DMDAVecGetArrayRead(da, Ctx->localU, &u); CHKERRQ(ierr); 
@@ -155,7 +155,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec RHS, void* ctx) {
                 
                 for (q = 0; q < N_gp2; ++q) {
                     
-                    value = 0.0; grad_x = 0.0; grad_y = 0.0; 
+                    grad_x = 0.0; grad_y = 0.0; 
                 
                     for (k = 0; k < nDOF; ++k) {
                         grad_x += coeffs[k]*get_element_3d(Ctx->gradphiFace_x,f,q,k);
@@ -181,9 +181,6 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec RHS, void* ctx) {
             
             local_j = j - (ys-1); 
             local_i = i - (xs-1);
-            
-            x_loc = Ctx->x_min + (PetscReal)(i)*Ctx->h;
-            y_loc = Ctx->y_min + (PetscReal)(j)*Ctx->h;
             
             Flux = 0.0; 
 
@@ -213,10 +210,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec RHS, void* ctx) {
             
             local_j = j - (ys-1); 
             local_i = i - (xs-1); 
-            
-            x_loc = Ctx->x_min + (PetscReal)(i)*Ctx->h;
-            y_loc = Ctx->y_min + (PetscReal)(j)*Ctx->h;
-            
+
             Flux = 0.0; 
             
             for (q = 0; q < N_gp2; ++q) {
@@ -246,7 +240,11 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec RHS, void* ctx) {
             
             rhs[j][i].comp[1] = r1_h*(get_element_2d(Ctx->F, j-ys, i+1-xs) - get_element_2d(Ctx->F, j-ys, i-xs)) + 
                                 r1_h*(get_element_2d(Ctx->G, j+1-ys, i-xs) - get_element_2d(Ctx->G, j-ys, i-xs)) ;
-                                        
+            
+            /*add source at (isx, isy)*/
+            if (i == Ctx->isx && j == Ctx->isy ) 
+                rhs[j][i].comp[1] += Source(t)*r1_h2;
+                   
         }
     }
 

@@ -82,7 +82,7 @@ int main(int argc, char **argv){
 
     ierr = PetscPrintf(PETSC_COMM_WORLD, "cfl = %g\n", user.cfl); CHKERRQ(ierr);
 
-    /*create 2d distributed grid*/
+    /*create 3d distributed grid*/
     ierr = DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC, DMDA_STENCIL_STAR, user.nx, user.ny, user.nz, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 1, user.stencil, NULL, NULL, NULL, &da); CHKERRQ(ierr);
     ierr = DMSetUp(da); CHKERRQ(ierr);
     ierr = DMDASetUniformCoordinates(da, user.xmin, user.xmax, user.ymin, user.ymax, user.zmin, user.zmax); CHKERRQ(ierr);
@@ -189,7 +189,7 @@ PetscErrorCode UpdatePressure(DM da, Vec Pold, Vec P, Vec Pnew, Vec C, AppCtx* u
                 /*update pressure*/
                 pnew[k][j][i] = 2.0*p[k][j][i] - pold[k][j][i] + c[k][j][i]*c[k][j][i]*dt*dt*(pxx + pyy + pzz);
 
-                /*put source at isrc*/
+                /*add source at (isx, isy, isz)*/
                 if (i == user->isx && j == user->isy && k == user->isz) 
                     pnew[k][j][i] += Source(it*dt)/(dx*dy*dz) *dt*dt;
             }

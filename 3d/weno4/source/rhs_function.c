@@ -21,7 +21,8 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec RHS, void* ctx) {
     PetscReal grad_x, grad_y, grad_z; 
     PetscReal u_x_loc[5], u_y_loc[5], u_z_loc[5], u_xy_loc[5], u_yz_loc[5], u_zx_loc[5], u_xyz_loc[8]; 
     PetscReal u_coeffs[dofs_per_cell];
-    PetscReal r1_h = 1./(Ctx->h); 
+    PetscReal r1_h  = 1./(Ctx->h);
+    PetscReal r1_h3 = 1./((Ctx->h)*(Ctx->h)*(Ctx->h)); 
     PetscReal nx, ny, nz; 
     PetscInt local_i, local_j, local_k;
 
@@ -333,6 +334,10 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec RHS, void* ctx) {
                                             r1_h*(get_element_3d(Ctx->G, k-zs, j+1-ys, i-xs) - get_element_3d(Ctx->G, k-zs, j-ys, i-xs)) + 
                                             r1_h*(get_element_3d(Ctx->H, k+1-zs, j-ys, i-xs) - get_element_3d(Ctx->H, k-zs, j-ys, i-xs));
                 
+                /*add source at (isx, isy, isz)*/
+                if (i == Ctx->isx && j == Ctx->isy && k == Ctx->isz) 
+                    rhs[k][j][i].comp[1] += Source(t)*r1_h3;
+
             }
         }
     }

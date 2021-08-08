@@ -30,20 +30,23 @@ int main(int argc,char **argv) {
 
     AppCtx Ctx; 
 
-    Ctx.x_min           = -1.0;                            
-    Ctx.x_max           =  1.0;                            
-    Ctx.y_min           = -1.0;                           
-    Ctx.y_max           =  1.0;
-    Ctx.z_min           = -1.0; 
-    Ctx.z_max           =  1.0;
-    Ctx.N_x             =  64;
-    Ctx.N_y             =  64;
-    Ctx.N_z             =  64;
-    Ctx.CFL             =  0.5;
+    Ctx.x_min           =  0.0;                            
+    Ctx.x_max           =  50.0;                            
+    Ctx.y_min           =  0.0;                           
+    Ctx.y_max           =  50.0;
+    Ctx.z_min           =  0.0; 
+    Ctx.z_max           =  50.0;
+    Ctx.N_x             =  100;
+    Ctx.N_y             =  100;
+    Ctx.N_z             =  100;
+    Ctx.h               =  0.5;
+    Ctx.dt              =  0.0005; 
+    Ctx.CFL             =  wave_speed*Ctx.dt/Ctx.h;
     Ctx.InitialStep     =  0; 
-    Ctx.InitialTime     =  0.0;                            
-    Ctx.FinalTime       =  5.0;                            
-    Ctx.WriteInterval   =  100;      
+    Ctx.InitialTime     =  0.0;
+    Ctx.Nt              =  251;                            
+    Ctx.FinalTime       =  Ctx.Nt*Ctx.dt;                            
+    Ctx.WriteInterval   =  5;      
     Ctx.RestartInterval =  1000;
     Ctx.left_boundary   =  periodic;                   
     Ctx.right_boundary  =  periodic;                   
@@ -51,9 +54,14 @@ int main(int argc,char **argv) {
     Ctx.top_boundary    =  periodic;
     Ctx.front_boundary  =  periodic;                     
     Ctx.back_boundary   =  periodic; 
-    Ctx.Restart         =  PETSC_FALSE; 
-    Ctx.h = (Ctx.x_max - Ctx.x_min)/(PetscReal)(Ctx.N_x);  
-    Ctx.dt = r1_3*Ctx.h*Ctx.CFL/wave_speed;
+    Ctx.Restart         =  PETSC_FALSE;   
+
+    Ctx.isx             =   50;
+    Ctx.isy             =   50;
+    Ctx.isz             =   50;
+    Ctx.irx             =   57;
+    Ctx.iry             =   57;
+    Ctx.irz             =   57;
 
     // --------------------------------------------
     // Data members  
@@ -135,30 +143,12 @@ int main(int argc,char **argv) {
     Ctx.H          = allocate3d(zm+1,ym,xm);
     
     ierr = DMCreateLocalVector(da,&Ctx.localU);CHKERRQ(ierr);
-    
-    // --------------------------------------------
-    // Initialize the solution (either with initial
-    // condition or restart file)
-    //---------------------------------------------
-    
-    if (Ctx.Restart) {
         
-        // Initialize by reading the restart file 
-        
-        PetscViewer    viewer_binary;
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from restart2.bin ...\n");CHKERRQ(ierr);
-        ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"restart2.bin",FILE_MODE_READ,&viewer_binary);CHKERRQ(ierr);
-        ierr = VecLoad(U,viewer_binary);CHKERRQ(ierr);
-        ierr = PetscViewerDestroy(&viewer_binary);CHKERRQ(ierr);
-    }
     
-    else {
-        
-        // Initialize by initial condition 
-        
-        ierr = InitializeSolution(U, da, Ctx);CHKERRQ(ierr);
-    }
+    // Initialize solution vectors with zero    
+    ierr = VecSet(U, 0.0); CHKERRQ(ierr);
     
+
     // --------------------------------------------
     // Advance solution in time   
     //---------------------------------------------
@@ -195,17 +185,6 @@ int main(int argc,char **argv) {
     ierr = DMView(da, viewer);CHKERRQ(ierr);
     ierr = VecView(U, viewer);CHKERRQ(ierr);
     
-
-    // --------------------------------------------
-    // Get the norms of errors and write it in file
-    //---------------------------------------------
-
-    PetscReal nrm_2, nrm_inf;
-    ierr = ErrorNorms(U, da, Ctx, &nrm_2, &nrm_inf, Ctx.FinalTime);CHKERRQ(ierr);
-    FILE *file;
-    file = fopen("Error.dat", "a");
-    ierr = PetscFPrintf(PETSC_COMM_WORLD, file, "%d %.7e %.7e\n", Ctx.N_x, nrm_2, nrm_inf, Ctx.FinalTime);
-    CHKERRQ(ierr);
 
     // --------------------------------------------
     // Free all the memory, finalize MPI and exit   

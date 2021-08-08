@@ -34,9 +34,9 @@
 #define DIM 3                /* Dimensions of the problem */
 #define dofs_per_cell 20     /* Number of degrees of freedom polynomial expansion in a cell */
 
-static const PetscReal small_num     = 1.0e-12; /* Effective small number in the code */
-static const PetscInt  s_width       = 5;       /* Width of the stencil */ 
-static const PetscReal wave_speed    = 1.0;     /* Wave speed*/
+static const PetscReal small_num     = 1.0e-12;   /* Effective small number in the code */
+static const PetscInt  s_width       = 5;         /* Width of the stencil */ 
+static const PetscReal wave_speed    = 250.0;     /* Wave speed*/
 
 // Mid-point Rule  (One-point gauss quadrature)
 
@@ -241,13 +241,14 @@ typedef struct {
     PetscReal y_max;                  /* y-coordinate of the domain ending */
     PetscReal z_max;                  /* z-coordinate of the domain ending */
     PetscInt N_x;                     /* No. of cells in the x-direction */
-    PetscInt N_y;                     /* No. of cells in the 0.33333333333 y-direction */
+    PetscInt N_y;                     /* No. of cells in the y-direction */
     PetscInt N_z;                     /* No. of cells in the z-direction */ 
     PetscReal CFL;                    /* CFL condition, should be less than 0.5 */
     PetscReal dt;                     /* Time step size */
     PetscReal h;                      /* Grid size */
     PetscReal InitialStep;            /* Initial step number of the simulation */
     PetscReal InitialTime;            /* Initial time of the simulation */
+    PetscInt  Nt;                     /* No of time steps*/
     PetscReal FinalTime;              /* Final time of the simulation */
     PetscInt WriteInterval;           /* No. of time steps after which data should be written */
     PetscInt RestartInterval;         /* Number of time steps after which to write restart data file */
@@ -263,6 +264,14 @@ typedef struct {
     array3d* F;                       /* Upwind flux in x-direction */
     array3d* G;                       /* Upwind flux in y-direction */
     array3d* H;                       /* Upwind flux in z-direction */
+
+    PetscInt isx;                     /*source   location in x direction*/
+    PetscInt isy;                     /*source   location in y direction*/
+    PetscInt isz;                     /*source   location in z direction*/
+    PetscInt irx;                     /*reciever location in x direction*/
+    PetscInt iry;                     /*reciever location in y direction*/
+    PetscInt irz;                     /*reciever location in z direction*/
+
 } AppCtx;
 
 //----------------------------------------------------------------------------
@@ -283,13 +292,10 @@ void evaluate_grad(const PetscReal coeffs[], PetscReal, PetscReal, PetscReal, co
 //----------------------------------------------------------------------------
 // Main functions related to the solver 
 //----------------------------------------------------------------------------
-
-Field InitialCondition(PetscReal, PetscReal, PetscReal);
-Field ExactSolution(PetscReal, PetscReal, PetscReal, PetscReal);
-PetscErrorCode InitializeSolution(Vec, DM, AppCtx);
+PetscReal Source(PetscReal);
 PetscErrorCode RHSFunction(TS, PetscReal, Vec, Vec, void*);
 PetscErrorCode MonitorFunction (TS, PetscInt, PetscReal, Vec, void*);
-PetscErrorCode ErrorNorms(Vec, DM, AppCtx, PetscReal*, PetscReal*, PetscReal);
+
 
 #endif /* HYPE_H_ */ 
  

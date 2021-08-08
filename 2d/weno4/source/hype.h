@@ -35,7 +35,7 @@
 #define nDOF 10      /* Number of degrees of freedom polynomial expansion in a cell */
 
 // Physical Constants 
-static const PetscReal wave_speed    = 1.0;      /* Wave speed */
+static const PetscReal wave_speed    = 580.0;      /* Wave speed */
 
 
 
@@ -246,9 +246,9 @@ typedef struct {
     PetscBool Restart;                /* Whether to start from restart file */
     PetscInt InitialStep;             /* Initial time step */
     PetscReal InitialTime;            /* Initial time of the simulation */
+    PetscInt  Nt;                     /* No of time steps*/
     PetscReal FinalTime;              /* Final time of the simulation */
     PetscInt WriteInterval;           /* No. of time steps after which data should be written */
-    PetscInt RestartInterval;         /* No. of time steps after which restart file should be written */
     enum bndry_type left_boundary;    /* Boundary condition on the left face */
     enum bndry_type right_boundary;   /* Boundary condition on the right face */
     enum bndry_type top_boundary;     /* Boundary condition on the top face */
@@ -260,6 +260,11 @@ typedef struct {
     array3d* gradphiFace_x;           /* Gradient in x-direction on volume quadrature points */
     array3d* gradphiFace_y;           /* Gradient in y-direction on volume quadrature points */
     
+    PetscInt       isx;               /*source   location in x direction*/
+    PetscInt       isy;               /*source   location in y direction*/
+    PetscInt       irx;               /*reciever location in x direction*/
+    PetscInt       iry;               /*reciever location in y direction*/
+
 } AppCtx;
 
 //----------------------------------------------------------------------------
@@ -281,13 +286,8 @@ void weno(const PetscReal U_x[], const PetscReal U_y[], const PetscReal U_xy[], 
 // Main functions related to the solver 
 //----------------------------------------------------------------------------
 
-void InitialCondition(PetscReal, PetscReal, PetscReal*);
-void ExactSolution(PetscReal, PetscReal, PetscReal, PetscReal*);
-PetscErrorCode InitializeSolution(Vec, DM, AppCtx);
 PetscErrorCode RHSFunction(TS, PetscReal, Vec, Vec, void*);
 PetscErrorCode MonitorFunction (TS, PetscInt, PetscReal, Vec, void*);
-PetscErrorCode ErrorNorms(Vec, DM, AppCtx, PetscReal*, PetscReal*, PetscReal);
-PetscErrorCode ComputePrimitiveVariables(Vec, Vec, DM);
-
+PetscReal Source(PetscReal);
 
 #endif /* HYPE_H_ */ 

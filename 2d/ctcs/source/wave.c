@@ -105,7 +105,7 @@ int main(int argc, char **argv){
         ierr = VecCopy(Pnew , P); CHKERRQ(ierr); /*P = Pnew*/
 
         /*plot pressure*/
-        if (it % 100 == 0) ierr = write_vts(da, P, it); CHKERRQ(ierr);
+        if (it % 50 == 0) ierr = write_vts(da, P, it); CHKERRQ(ierr);
 
     }
 
@@ -212,7 +212,7 @@ PetscErrorCode write_vts(DM da, Vec P, PetscInt step)
 
 PetscReal Source(PetscReal  t){
 
-    PetscReal   f0 = 40.0;      /*dominant frequency is 40 Hz*/
+    PetscReal   f0 = 65.0;      /*dominant frequency is 40 Hz*/
     PetscReal   t0 = 4.0/ f0;   /*source time shift*/
     
     return -2.0*(t - t0)*f0*f0*PetscExpReal( -1.0*f0*f0*(t - t0)*(t - t0));

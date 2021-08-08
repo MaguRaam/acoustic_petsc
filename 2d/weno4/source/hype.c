@@ -3,7 +3,7 @@
  *      Author: sunder
  */ 
 
-static char help[] = "4th Order 2D code for solving Wave Equation using PETSc.\n\n";
+static char help[] = "4th Order 2D Acoustic solver with time dependent delta source PETSc.\n\n";
 
 #include "hype.h" 
 
@@ -29,26 +29,33 @@ int main(int argc,char **argv) {
 
     AppCtx Ctx; 
 
-    Ctx.x_min           = -1.0;                            
-    Ctx.x_max           =  1.0;                            
-    Ctx.y_min           = -1.0;                           
-    Ctx.y_max           =  1.0;                             
-    Ctx.N_x             =  256;                            
-    Ctx.N_y             =  256;                             
-    Ctx.CFL             =  0.5;                            
+    Ctx.x_min           =  0.0;                            
+    Ctx.x_max           =  500;                            
+    Ctx.y_min           =  0.0;                           
+    Ctx.y_max           =  500;                             
+    Ctx.N_x             =  500;                            
+    Ctx.N_y             =  500;
+    Ctx.h               =  1.0;
+    Ctx.dt              =  0.0010;                             
+    Ctx.CFL             =  wave_speed*Ctx.dt/Ctx.h;                           
     Ctx.InitialStep     =  0;
-    Ctx.InitialTime     =  0.0;                            
-    Ctx.FinalTime       =  0.1;                            
+    Ctx.InitialTime     =  0.0;
+    Ctx.Nt              =  502;                            
+    Ctx.FinalTime       =  Ctx.Nt*Ctx.dt;                            
     Ctx.WriteInterval   =  50;      
-    Ctx.RestartInterval =  500;
-    Ctx.left_boundary   =  adiabatic_wall;                   
-    Ctx.right_boundary  =  adiabatic_wall;                   
-    Ctx.bottom_boundary =  adiabatic_wall;                     
-    Ctx.top_boundary    =  adiabatic_wall;  
-    Ctx.Restart         =  PETSC_FALSE; 
-    Ctx.h = (Ctx.x_max - Ctx.x_min)/(PetscReal)(Ctx.N_x); 
-    Ctx.dt = 0.5*Ctx.h*Ctx.CFL/wave_speed; 
+    Ctx.left_boundary   =  periodic;                   
+    Ctx.right_boundary  =  periodic;                   
+    Ctx.bottom_boundary =  periodic;                     
+    Ctx.top_boundary    =  periodic;  
     
+
+    Ctx.isx            =   250;
+    Ctx.isy            =   250;
+    Ctx.irx            =   330;
+    Ctx.iry            =   330;
+
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "cfl = %g\n", Ctx.CFL); CHKERRQ(ierr);
+
     //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // No need to change anything beyond this point 
     //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -172,26 +179,10 @@ int main(int argc,char **argv) {
     ierr = DMCreateLocalVector(da,&Ctx.localU);CHKERRQ(ierr);
 
     // --------------------------------------------
-    // Initialize the solution (either with initial
-    // condition or restart file)
+    // Initialize vector with zeros
     //---------------------------------------------
+    ierr = VecSet(U, 0.0); CHKERRQ(ierr);
 
-    if (Ctx.Restart) {
-        
-        // Initialize by reading the restart file 
-        
-        PetscViewer    viewer_binary;
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from restart1.bin ...\n");CHKERRQ(ierr);
-        ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"restart1.bin",FILE_MODE_READ,&viewer_binary);CHKERRQ(ierr);
-        ierr = VecLoad(U,viewer_binary);CHKERRQ(ierr);
-        ierr = PetscViewerDestroy(&viewer_binary);CHKERRQ(ierr);
-    }
-
-    else {
-        
-        // Initialize by initial condition 
-        ierr = InitializeSolution(U, da, Ctx);CHKERRQ(ierr);
-    }
 
     // --------------------------------------------
     // Advance solution in time   
@@ -226,15 +217,6 @@ int main(int argc,char **argv) {
     ierr = DMView(da, viewer);CHKERRQ(ierr);
     ierr = VecView(U, viewer);CHKERRQ(ierr);
     
-    // --------------------------------------------
-    // Get the norms of errors (only for periodic
-    // test cases)
-    //---------------------------------------------
-
-    PetscReal nrm_2, nrm_inf;
-    ierr = ErrorNorms(U, da, Ctx, &nrm_2, &nrm_inf,Ctx.FinalTime);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Norm2 = %.7e, NormMax = %.7e\n", nrm_2, nrm_inf);CHKERRQ(ierr);
-
     // --------------------------------------------
     // Print the time taken for simulation       
     //---------------------------------------------

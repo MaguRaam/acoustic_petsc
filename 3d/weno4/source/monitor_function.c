@@ -39,24 +39,5 @@ PetscErrorCode MonitorFunction (TS ts,PetscInt step, PetscReal time, Vec U, void
         }
     }
 
-    if (Ctx->RestartInterval != 0) {
-        
-        PetscViewer    viewer_binary;
-
-        if(step%Ctx->RestartInterval == 0) {
-            ierr = PetscPrintf(PETSC_COMM_WORLD,"Writing data in binary to restart1.bin at t = %f\n", time); CHKERRQ(ierr);
-            ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"restart1.bin",FILE_MODE_WRITE, &viewer_binary); CHKERRQ(ierr);
-            ierr = VecView(U,viewer_binary); CHKERRQ(ierr);
-            ierr = PetscViewerDestroy(&viewer_binary); CHKERRQ(ierr);
-        }
-        
-        if(step%(Ctx->RestartInterval + 7) == 0) {
-            ierr = PetscPrintf(PETSC_COMM_WORLD,"Writing data in binary to restart2.bin at t = %f\n", time); CHKERRQ(ierr);
-            ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"restart2.bin",FILE_MODE_WRITE, &viewer_binary); CHKERRQ(ierr);
-            ierr = VecView(U,viewer_binary); CHKERRQ(ierr);
-            ierr = PetscViewerDestroy(&viewer_binary); CHKERRQ(ierr);
-        }
-    }
-
     return ierr; 
 } 
