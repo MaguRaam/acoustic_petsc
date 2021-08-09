@@ -16,9 +16,9 @@ PetscErrorCode MonitorFunction (TS ts,PetscInt step, PetscReal time, Vec U, void
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"%d t = %f\n", step, time); CHKERRQ(ierr);
 
-    // Plot the solution at the required time interval 
+    // TODO Plot the solution at the required time interval 
 
-    if (Ctx->WriteInterval != 0) {
+    /*if (Ctx->WriteInterval != 0) {
 
         if(step%Ctx->WriteInterval == 0) {
         
@@ -37,7 +37,7 @@ PetscErrorCode MonitorFunction (TS ts,PetscInt step, PetscReal time, Vec U, void
             ierr = PetscViewerDestroy(&viewer); CHKERRQ(ierr);
         
         }
-    }
+    }*/
 
     return ierr; 
 } 

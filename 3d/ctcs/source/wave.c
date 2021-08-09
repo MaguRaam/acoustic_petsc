@@ -192,6 +192,13 @@ PetscErrorCode UpdatePressure(DM da, Vec Pold, Vec P, Vec Pnew, Vec C, AppCtx* u
                 /*add source at (isx, isy, isz)*/
                 if (i == user->isx && j == user->isy && k == user->isz) 
                     pnew[k][j][i] += Source(it*dt)/(dx*dy*dz) *dt*dt;
+                
+                /*print reciever presure*/
+                if (i == user->irx && j == user->iry && k == user->irz){
+                    FILE *f = fopen("results/p.dat","a+");
+                    ierr = PetscFPrintf(PETSC_COMM_SELF, f, "%e\t%e\n", it*dt, p[k][j][i]); CHKERRQ(ierr);
+                    fclose(f);
+                }
             }
         }
     }

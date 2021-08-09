@@ -337,7 +337,13 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec RHS, void* ctx) {
                 /*add source at (isx, isy, isz)*/
                 if (i == Ctx->isx && j == Ctx->isy && k == Ctx->isz) 
                     rhs[k][j][i].comp[1] += Source(t)*r1_h3;
-
+					
+					 /*print reciever presure*/
+                if (i == Ctx->irx && j == Ctx->iry && k == Ctx->irz){
+                    FILE *f = fopen("results/p.dat","a+");
+                    ierr = PetscFPrintf(PETSC_COMM_SELF, f, "%e\t%.12e\n", t, u[k][j][i].comp[0]); CHKERRQ(ierr);
+                    fclose(f);
+                }
             }
         }
     }

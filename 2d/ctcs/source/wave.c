@@ -104,13 +104,12 @@ int main(int argc, char **argv){
         ierr = VecCopy(P, Pold); CHKERRQ(ierr);  /*Pold = P*/
         ierr = VecCopy(Pnew , P); CHKERRQ(ierr); /*P = Pnew*/
 
+
         /*plot pressure*/
         if (it % 50 == 0) ierr = write_vts(da, P, it); CHKERRQ(ierr);
 
     }
-
-
-
+    
 
     /*destroy petsc objects*/
     DMDestroy(&da);
@@ -134,14 +133,7 @@ PetscErrorCode UpdatePressure(DM da, Vec Pold, Vec P, Vec Pnew, Vec C, AppCtx* u
     PetscReal       dx = user->dx, dy = user->dy;
     PetscReal       invdx2 = 1.0/(dx*dx), invdy2 = 1.0/(dy*dy); 
     PetscReal       dt = user->dt;
-
-    PetscFunctionBeginUser;
-
-    /*get local grid boundaries*/
-    ierr = DMDAGetCorners(da, &xs, &ys, NULL, &xm, &ym, NULL); CHKERRQ(ierr);
-
-    /*create local vector that has space for ghost values*/
-    ierr = DMGetLocalVector(da, &Plocal); CHKERRQ(ierr);
+leg2,= plt.plot(time, Analytical[0:nt],'r--',markersize=1)Q(ierr);
 
     /*scatter values from global to local vector*/
     ierr = DMGlobalToLocalBegin(da, P, INSERT_VALUES, Plocal); CHKERRQ(ierr);
@@ -179,6 +171,14 @@ PetscErrorCode UpdatePressure(DM da, Vec Pold, Vec P, Vec Pnew, Vec C, AppCtx* u
             /*put source at isrc*/
             if (i == user->isx && j == user->isy) 
                 pnew[j][i] += Source(it*dt)/(dx*dy) *dt*dt;
+        
+            /*print reciever presure*/
+            if (i == user->irx && j == user->iry){
+                FILE *f = fopen("results/p.dat","a+");
+                ierr = PetscFPrintf(PETSC_COMM_SELF, f, "%g\t%7.12e\n", it*dt, p[j][i]); CHKERRQ(ierr);
+                fclose(f);
+            }
+        
         }
     }
 
