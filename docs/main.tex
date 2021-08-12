@@ -1,0 +1,56 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amsfonts,amsthm}
+\usepackage{graphicx}
+
+\title{Sound Emitted by Point Source}
+\date{\today}
+\author{}
+\begin{document}
+\maketitle
+\section*{}
+The state of a fluid at any point $\mathbf{x}$ and time $t$ is completely determined by specifying the velocity $\mathbf{v}$ and any two thermodynamic variables. The equation of motion for a compressible isentropic  
+
+\section*{}
+\begin{equation}\label{acoustic wave}
+	\Bigg( \frac{1}{c_{0}^2}\frac{\partial{}^{2}}{\partial{t}^{2}}- \nabla{}^{2} \Bigg) p(\mathbf{x}, t) = s(\mathbf{x}, t)
+\end{equation}  
+
+\begin{equation}\label{green}
+    \Bigg( \frac{1}{c_{0}^2}\frac{\partial{}^{2}}{\partial{t}^{2}}- \nabla{}^{2} \Bigg){G(\mathbf{x}, t; \mathbf{y}, \tau )} = \delta{(\mathbf{x} - \mathbf{y})}\delta{(t - \tau)} 
+\end{equation}
+
+\begin{equation}
+    \Bigg( \frac{1}{c_{0}^2}\frac{\partial{}^{2}}{\partial{t}^{2}}- \nabla{}^{2} \Bigg)s(\mathbf{y}, \tau){G(\mathbf{x}, t; \mathbf{y}, \tau )} = s(\mathbf{y}, \tau)\delta{(\mathbf{x} - \mathbf{y})}\delta{(t - \tau)} 
+\end{equation}
+
+\begin{equation}
+    \Bigg( \frac{1}{c_{0}^2}\frac{\partial{}^{2}}{\partial{t}^{2}}- \nabla{}^{2} \Bigg) \int s(\mathbf{y}, \tau){G(\mathbf{x}, t; \mathbf{y}, \tau )} d\mathbf{y}d\tau  = \int s(\mathbf{y}, \tau)\delta{(\mathbf{x} - \mathbf{y})}\delta{(t - \tau)} d\mathbf{y}d\tau  
+\end{equation}
+
+Using the properties of delta function we can simplify further
+\begin{equation}
+    \Bigg( \frac{1}{c_{0}^2}\frac{\partial{}^{2}}{\partial{t}^{2}}- \nabla{}^{2} \Bigg) \int s(\mathbf{y}, \tau){G(\mathbf{x}, t; \mathbf{y}, \tau )} d\mathbf{y}d\tau  = s(\mathbf{x}, t) 
+\end{equation}
+
+\begin{equation*}
+    p(\mathbf{x}, t) = \int s(\mathbf{y}, \tau){G(\mathbf{x}, t; \mathbf{y}, \tau )} d\mathbf{y}d\tau 
+\end{equation*}
+
+Deriving Green's function for 3d acoutic wave equation. For simplicity we assume point source is located at $\mathbf{y} = 0$ and time $\tau$ = 0
+
+\begin{equation}
+    \Bigg( \frac{1}{c_{0}^2}\frac{\partial{}^{2}}{\partial{t}^{2}}- \nabla{}^{2} \Bigg){G(\mathbf{x}, t )} = \delta{(\mathbf{x})}\delta{(t)} 
+\end{equation}
+
+for $\mathbf{x} > 0$ 
+
+\begin{equation}
+    \Bigg( \frac{1}{c_{0}^2}\frac{\partial{}^{2}}{\partial{t}^{2}}- \nabla{}^{2} \Bigg){G(\mathbf{x}, t )} = 0 
+\end{equation}
+
+Spherically symmetric Laplacian operator in radial coordinate system
+
+
+
+\end{document}
