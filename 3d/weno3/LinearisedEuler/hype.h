@@ -34,13 +34,12 @@
 #define DIM 3                /* Dimensions of the problem */
 #define dofs_per_cell 10     /* Number of degrees of freedom polynomial expansion in a cell */
 
-static const PetscReal rho_0         = 1.0;           /*base fluid density*/
-static const PetscReal invrho_0      = 1.0/rho_0;     /*inverse of base fluid density*/
-static const PetscReal c_0           = 1.0;           /*wave speed*/
-static const PetscReal prs_floor     = 1.0e-12;       /* Pressure floor value */
-static const PetscReal rho_floor     = 1.0e-14;       /* Density floor value */
-static const PetscReal small_num     = 1.0e-12;       /* Effective small number in the code */
-static const PetscInt  s_width       = 5;             /* Width of the stencil */ 
+static const PetscReal c_0           = 1.0;                           /*acoustic wave speed*/
+static const PetscReal rho_0         = 1.0;                           /*base fluid density*/
+static const PetscReal prs_floor     = 1.0e-12;                       /* Pressure floor value */
+static const PetscReal rho_floor     = 1.0e-14;                       /* Density floor value */
+static const PetscReal small_num     = 1.0e-12;                       /* Effective small number in the code */
+static const PetscInt  s_width       = 5;                             /* Width of the stencil */ 
   
 // Mid-point Rule  (One-point gauss quadrature)
 
@@ -186,7 +185,6 @@ typedef struct {
   PetscInt nelem; 
   PetscReal * data;
 } array5d;
- F->comp[4] = (E + p)*(nx*u + ny*v + nz*w);
 
 array5d* allocate5d(PetscInt, PetscInt, PetscInt, PetscInt, PetscInt);
 array5d * copy_array5d(array5d*);

@@ -9,10 +9,10 @@
 void PDECons2Prim(const Field *Q, Field *V)
 {
 
-    V->comp[0] = Q->comp[0];
-    V->comp[1] = Q->comp[1];
-    V->comp[2] = Q->comp[2];
-    V->comp[3] = Q->comp[3];
+    V->comp[0] = Q->comp[0];      
+    V->comp[1] = Q->comp[1];      
+    V->comp[2] = Q->comp[2];      
+    V->comp[3] = Q->comp[3];      
 }
 
 //----------------------------------------------------------------------------
@@ -37,21 +37,15 @@ PetscReal PDEConsFlux(const Field *Q,
                       const PetscReal x, const PetscReal y, const PetscReal z,
                       Field *F)
 {
+    PetscReal K = rho_0 * c_0 * c_0;     //bulk modulus
+    PetscReal invrho_0 = 1.0 / rho_0;
 
-    PetscReal rho = Q->comp[0];
+    PetscReal p = Q->comp[0];
     PetscReal u = Q->comp[1];
     PetscReal v = Q->comp[2];
     PetscReal w = Q->comp[3];
-    PetscReal p = c_0 * c_0 * rho;
 
     // Check if the input state is physically admissible
-
-    if (rho < rho_floor)
-    {
-        printf("Negative density = %f\n", rho);
-        printf("At x = %f, y = %f, z = %f\n", x, y, z);
-        MPI_Abort(PETSC_COMM_WORLD, 1);
-    }
 
     if (p < prs_floor)
     {
@@ -60,16 +54,16 @@ PetscReal PDEConsFlux(const Field *Q,
         MPI_Abort(PETSC_COMM_WORLD, 1);
     }
 
-    // Now find the fluxes
+    // Now find the fluxes                 
 
-    F->comp[0] = nx * rho_0 * u + ny * rho_0 * v + nz * rho_0 * w;
+    F->comp[0] = nx * K * u + ny * K * v + nz * K * w;
     F->comp[1] = invrho_0 * nx * p;
     F->comp[2] = invrho_0 * ny * p;
     F->comp[3] = invrho_0 * nz * p;
 
     // Also obtain the maximum eigen value
 
-    PetscReal s_max = PetscAbsReal(u * nx + v * ny + w * nz) + a;
+    PetscReal s_max = c_0;   //! is the eigenvalue correct
 
     return s_max;
 }

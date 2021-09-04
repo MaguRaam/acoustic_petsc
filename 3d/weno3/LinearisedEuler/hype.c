@@ -117,11 +117,10 @@ int main(int argc,char **argv) {
                                         Ctx.z_min + 0.5*Ctx.h, Ctx.z_max + 0.5*Ctx.h);CHKERRQ(ierr);
     // Set names of the fields
 
-    ierr = DMDASetFieldName(da,0,"density");CHKERRQ(ierr);
-    ierr = DMDASetFieldName(da,1,"x-momentum");CHKERRQ(ierr);
-    ierr = DMDASetFieldName(da,2,"y-momentum");CHKERRQ(ierr);    
-    ierr = DMDASetFieldName(da,3,"z-momentum");CHKERRQ(ierr);
-    ierr = DMDASetFieldName(da,4,"total-energy-density");CHKERRQ(ierr);
+    ierr = DMDASetFieldName(da,0,"p");CHKERRQ(ierr);
+    ierr = DMDASetFieldName(da,1,"u");CHKERRQ(ierr);
+    ierr = DMDASetFieldName(da,2,"v");CHKERRQ(ierr);    
+    ierr = DMDASetFieldName(da,3,"w");CHKERRQ(ierr);
     
     // --------------------------------------------
     // Allocate memory for boundary values and 
